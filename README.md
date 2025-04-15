@@ -1,6 +1,6 @@
-# Fuzzy-Image-Enhancement-Type-Ⅰ
+# Fuzzy Image Contrast Enhancement
 
-This project implements a fuzzy logic-based image contrast enhancement method. It uses fuzzy sets and inference mechanisms to improve the contrast of images, with a focus on fuzzy edge enhancement and various traditional contrast enhancement methods for comparison.
+This project implements a fuzzy logic-based image contrast enhancement method. It uses fuzzy sets and inference mechanisms to improve the contrast of images, with a focus on fuzzy edge enhancement and various traditional contrast enhancement methods for comparison. The enhancement techniques are particularly tested on an **underwater infrared dataset**, which presents challenges such as low visibility and high noise.
 
 ## Features
 
@@ -10,6 +10,8 @@ This project implements a fuzzy logic-based image contrast enhancement method. I
   - Contrast Limited Adaptive Histogram Equalization (CLAHE)
 - **Edge Detection and Enhancement**: Applies edge filters to enhance image details and sharpness.
 - **Evaluation**: Compares the performance of the enhancement methods using metrics like PSNR, SSIM, and Shannon Entropy.
+- **Underwater Infrared Dataset**: This method is particularly applied to an **underwater infrared dataset**, which is ideal for images with poor visibility and substantial noise.
+
 
 ## Prerequisites
 
