@@ -1,26 +1,35 @@
-# Fuzzy Image Contrast Enhancement
+# Fuzzy Image, GIF, and Video Contrast Enhancement
 
-This project implements a fuzzy logic-based image contrast enhancement method. It uses fuzzy sets and inference mechanisms to improve the contrast of images, with a focus on fuzzy edge enhancement and various traditional contrast enhancement methods for comparison. The enhancement techniques are particularly tested on an **underwater infrared dataset**, which presents challenges such as low visibility and high noise.
+This project implements a fuzzy logic-based contrast enhancement method that works seamlessly across **images**, **GIFs**, and **videos**. It leverages fuzzy sets and inference mechanisms to enhance visual clarity, especially in challenging conditions such as low contrast and high noise. The method is extensively tested on an **underwater infrared dataset**, which is known for its poor visibility and heavy noise artifacts.
 
 ## Features
 
-- **Fuzzy Image Enhancement**: Enhances contrast by using fuzzy logic to model pixel intensities and improve image details, especially for low-contrast areas.
-- **Traditional Methods**: Compares the fuzzy method with traditional image contrast techniques, such as:
+- 🎯 **Fuzzy Contrast Enhancement**  
+  Applies fuzzy logic to model pixel intensities, improving contrast and revealing hidden details in low-visibility content.
+
+- 🖼️ **Multi-Format Support**  
+  Supports static **images**, animated **GIFs**, and dynamic **videos** through a unified processing pipeline.
+
+- ⚙️ **Traditional Enhancement Techniques for Comparison**  
+  Includes:
   - Histogram Equalization (HE)
   - Contrast Limited Adaptive Histogram Equalization (CLAHE)
-- **Edge Detection and Enhancement**: Applies edge filters to enhance image details and sharpness.
-- **Evaluation**: Compares the performance of the enhancement methods using metrics like PSNR, SSIM, and Shannon Entropy.
-- **Underwater Infrared Dataset**: This method is particularly applied to an **underwater infrared dataset**, which is ideal for images with poor visibility and substantial noise.
 
+- 🧠 **Edge Detection & Enhancement**  
+  Incorporates edge filters and fuzzy enhancement to sharpen object boundaries and improve structural detail.
+
+- 📊 **Evaluation Metrics**  
+  Compares results using:
+  - PSNR (Peak Signal-to-Noise Ratio)
+  - SSIM (Structural Similarity Index)
+  - Shannon Entropy
+
+- 🌊 **Special Focus: Underwater Infrared Dataset**  
+  Optimized and evaluated on infrared images captured in underwater environments—ideal for testing in low-light, high-noise scenarios.
 
 ## Prerequisites
 
-Ensure you have the following dependencies installed:
+Make sure the following Python libraries are installed:
 
-- Python 3.x
-- OpenCV (`cv2`)
-- Matplotlib
-- Numpy
-- scikit-image
-- IPython
-- glob2
+```bash
+pip install opencv-python matplotlib numpy scikit-image ipython glob2 imageio
