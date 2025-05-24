@@ -289,30 +289,89 @@ def process_video(video_path, output_path=None, display_frames=False):
     print(f"Average Entropy: {np.mean(entropy_vals):.4f}")
 
 def process_gif(gif_path, output_path=None, display_frames=False):
-    """Process a GIF file frame by frame with fuzzy enhancement"""
+    """Process a GIF file frame by frame with fuzzy enhancement and compute PSNR, SSIM, Entropy"""
     gif = imageio.get_reader(gif_path)
     
+    # Get GIF metadata
+    metadata = gif.get_meta_data()
+    
+    # Metrics accumulators
+    psnr_vals = []
+    ssim_vals = []
+    entropy_vals = []
+    
     frames = []
+    frame_count = 0
+    
     for frame in gif:
-
-        if frame.ndim == 2:  
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
-        else:  
-            frame_rgb = frame
+        frame_count += 1
+        try:
+            # Convert frame to RGB format (discard alpha channel if present)
+            if frame.ndim == 2:  # Grayscale
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
+            elif frame.shape[2] == 4:  # RGBA
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)
+            else:  # Already RGB
+                frame_rgb = frame
             
-
-        enhanced_frame = FuzzyContrastEnhance(frame_rgb)
-        frames.append(enhanced_frame)
-        
-        if display_frames:
-            plt.imshow(enhanced_frame)
-            plt.axis('off')
-            plt.show()
+            # Apply fuzzy enhancement
+            enhanced_frame = FuzzyContrastEnhance(frame_rgb)
+            
+            # Verify dimensions match before calculating metrics
+            if enhanced_frame.shape == frame_rgb.shape:
+                # Metrics computation
+                psnr_val = psnr(frame_rgb, enhanced_frame)
+                ssim_val = ssim(frame_rgb, enhanced_frame, channel_axis=2)
+                entropy_val = shannon_entropy(cv2.cvtColor(enhanced_frame, cv2.COLOR_RGB2GRAY))
+                
+                psnr_vals.append(psnr_val)
+                ssim_vals.append(ssim_val)
+                entropy_vals.append(entropy_val)
+            else:
+                print(f"Frame {frame_count}: Dimension mismatch {enhanced_frame.shape} vs {frame_rgb.shape} - skipping metrics")
+            
+            frames.append(enhanced_frame)
+            
+            if display_frames:
+                plt.figure(figsize=(10, 5))
+                plt.subplot(1, 2, 1)
+                plt.imshow(frame_rgb)
+                plt.title(f'Original Frame {frame_count}')
+                plt.axis('off')
+                
+                plt.subplot(1, 2, 2)
+                plt.imshow(enhanced_frame)
+                plt.title(f'Enhanced Frame {frame_count}')
+                plt.axis('off')
+                
+                plt.show()
+                
+        except Exception as e:
+            print(f"Error processing frame {frame_count}: {str(e)}")
+            continue
     
     if output_path:
-        imageio.mimsave(output_path, frames, duration=gif.get_meta_data()['duration']/1000)
+        # Save the enhanced GIF with the same duration as original
+        try:
+            imageio.mimsave(output_path, frames, duration=metadata.get('duration', 0.1)/1000)
+        except Exception as e:
+            print(f"Error saving output GIF: {str(e)}")
+    
+    # Print summary statistics
+    print(f"\nProcessing Summary:")
+    print(f"Total frames processed: {frame_count}")
+    print(f"Frames with successful metrics: {len(psnr_vals)}")
+    
+    if psnr_vals:
+        print("\nAverage Metrics for Frames with Successful Processing:")
+        print(f"{'PSNR':<10} | {'SSIM':<10} | {'Entropy':<10}")
+        print("-" * 36)
+        print(f"{np.mean(psnr_vals):<10.4f} | {np.mean(ssim_vals):<10.4f} | {np.mean(entropy_vals):<10.4f}")
+    else:
+        print("\nNo frames were successfully processed for metrics calculation")
     
     return frames
+
 
 def evaluate_methods(original_rgb, is_video_frame=False):
     methods = {
