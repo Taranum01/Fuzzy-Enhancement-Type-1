@@ -203,56 +203,90 @@ def CLAHE(rgb):
     lab[:, :, 0] = clahe.apply(lab[:, :, 0])
     return cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)
 
+def evaluate_frame_metrics(original, enhanced):
+    """Evaluate PSNR, SSIM, and Entropy between original and enhanced frames"""
+    psnr_val = psnr(original, enhanced)
+    ssim_val = ssim(original, enhanced, channel_axis=2)
+    entropy_val = shannon_entropy(cv2.cvtColor(enhanced, cv2.COLOR_RGB2GRAY))
+    return psnr_val, ssim_val, entropy_val
+
+def print_average_metrics(name, psnr_list, ssim_list, entropy_list):
+    print(f"\n{name} Enhancement Metrics:")
+    print(f"{'Metric':<10} | {'Value':<10}")
+    print("-" * 24)
+    print(f"{'Avg PSNR':<10} | {np.mean(psnr_list):<.4f}")
+    print(f"{'Avg SSIM':<10} | {np.mean(ssim_list):<.4f}")
+    print(f"{'Avg Entropy':<10} | {np.mean(entropy_list):<.4f}")
+
 def process_video(video_path, output_path=None, display_frames=False):
-    """Process a video file frame by frame with fuzzy enhancement"""
+    """Process a video file frame by frame with fuzzy enhancement and compute PSNR, SSIM, Entropy"""
     cap = cv2.VideoCapture(video_path)
-    
+
     if not cap.isOpened():
         print("Error opening video file")
         return
-    
+
     # Get video properties
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    
+
     # Initialize video writer if output path is provided
     if output_path:
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-    
+
+    # Metrics accumulators
+    psnr_vals = []
+    ssim_vals = []
+    entropy_vals = []
+
     frame_count = 0
     while True:
         ret, frame = cap.read()
         if not ret:
             break
-            
+
         # Convert BGR to RGB
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        
+
         # Apply fuzzy enhancement
         enhanced_frame = FuzzyContrastEnhance(frame_rgb)
-        
+
         # Convert back to BGR for video writing/display
         enhanced_frame_bgr = cv2.cvtColor(enhanced_frame, cv2.COLOR_RGB2BGR)
-        
+
+        # Metrics computation
+        psnr_val = psnr(frame_rgb, enhanced_frame)
+        ssim_val = ssim(frame_rgb, enhanced_frame, channel_axis=2)
+        entropy_val = shannon_entropy(cv2.cvtColor(enhanced_frame, cv2.COLOR_RGB2GRAY))
+
+        psnr_vals.append(psnr_val)
+        ssim_vals.append(ssim_val)
+        entropy_vals.append(entropy_val)
+
         if output_path:
             out.write(enhanced_frame_bgr)
-            
+
         if display_frames:
             cv2.imshow('Original', frame)
             cv2.imshow('Enhanced', enhanced_frame_bgr)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-                
+
         frame_count += 1
         print(f"Processed frame {frame_count}", end='\r')
-    
+
     cap.release()
     if output_path:
         out.release()
     cv2.destroyAllWindows()
+
+    # Print average metrics
     print(f"\nFinished processing {frame_count} frames")
+    print(f"Average PSNR: {np.mean(psnr_vals):.4f}")
+    print(f"Average SSIM: {np.mean(ssim_vals):.4f}")
+    print(f"Average Entropy: {np.mean(entropy_vals):.4f}")
 
 def process_gif(gif_path, output_path=None, display_frames=False):
     """Process a GIF file frame by frame with fuzzy enhancement"""
